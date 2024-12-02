@@ -1,27 +1,31 @@
-use core::num;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-fn part_1(filepath: &str) -> std::io::Result<i32> {
-    let fs =std::fs::File::open(filepath)?;
-    let mut reader = std::io::BufReader::new(fs);
-    let mut num_list = [Vec::new(), Vec::new()];
+fn file_to_lists(filepath: &str) ->std::io::Result<(Vec<i32>, Vec<i32>)> {
+    let fs = File::open(filepath)?;
+    let reader = BufReader::new(fs);
+    let mut num_list = (Vec::new(), Vec::new());
     for line in reader.lines() {
         let s =line?;
         let mut parts = s.split_whitespace().map(|s| s.parse::<i32>());
         match (parts.next(), parts.next()) {
             (Some(Ok(a)), Some(Ok(b))) => {
-                num_list[0].push(a);
-                num_list[1].push(b);
+                num_list.0.push(a);
+                num_list.1.push(b);
             }
             _ => {}  // ignore invalid input
         }
     }
+    return Ok(num_list);
+}
 
-    num_list[0].sort();
-    num_list[1].sort();
+fn part_1(filepath: &str) -> std::io::Result<i32> {
+    let (mut a_list, mut b_list) = file_to_lists(filepath)?;
 
-    let dist : i32 = num_list[0].iter().zip(num_list[1].iter())
+    a_list.sort();
+    b_list.sort();
+
+    let dist : i32 = a_list.iter().zip(b_list.iter())
         .map(|(a,b)| {
             return a - b;
         })
@@ -32,43 +36,31 @@ fn part_1(filepath: &str) -> std::io::Result<i32> {
 
 fn part_2(filepath: &str) ->std::io::Result<i32> {
     /* Read lists from file */
-    let fs =std::fs::File::open(filepath)?;
-    let mut reader = std::io::BufReader::new(fs);
-    let mut num_list = [Vec::new(), Vec::new()];
-    for line in reader.lines() {
-        let s =line?;
-        let mut parts = s.split_whitespace().map(|s| s.parse::<i32>());
-        match (parts.next(), parts.next()) {
-            (Some(Ok(a)), Some(Ok(b))) => {
-                num_list[0].push(a);
-                num_list[1].push(b);
-            }
-            _ => {}  // ignore invalid input
-        }
-    }
+    let (mut a_list, mut b_list) = file_to_lists(filepath)?;
+
     
     // sort lists
-    num_list[0].sort();
-    num_list[1].sort();
+    a_list.sort();
+    b_list.sort();
 
     let mut i = 0;
     let mut j = 0;
     let mut total = 0;
-    while i < num_list[0].len() && j < num_list[1].len() {
-        if num_list[0][i] < num_list[1][j] {
+    while i < a_list.len() && j < b_list.len() {
+        if a_list[i] < b_list[j] {
             i += 1;
-        } else if num_list[0][i] > num_list[1][j] {
+        } else if a_list[i] > b_list[j] {
             j += 1;
         } else {
-            let number_value = num_list[0][i];
+            let number_value = a_list[i];
             let mut a_count = 0;
-            while i < num_list[0].len() && num_list[0][i] == number_value {
+            while i < a_list.len() && a_list[i] == number_value {
                 a_count += 1;
                 i += 1;
             }
 
             let mut b_count = 0;
-            while j < num_list[1].len() && num_list[1][j] == number_value {
+            while j < b_list.len() && b_list[j] == number_value {
                 b_count += 1;
                 j += 1;
             }
